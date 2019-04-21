@@ -3,7 +3,7 @@
 
 ## Indexer
 
-- **[No completado]** Aceptará dos argumentos de entrada: el primero el directorio donde está la colección
+- **[DONE]** Aceptará dos argumentos de entrada: el primero el directorio donde está la colección
 de noticias y el segundo el nombre del fichero donde se guardará el índice.
 - **[No completado]** Procesará los documentos y extraerá las noticias: eliminar símbolos no alfanuméricos
 (comillas, sostenidos, interrogantes,…), extraer los términos (consideraremos
