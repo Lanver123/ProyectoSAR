@@ -11,8 +11,10 @@
 
 import sys
 import os
+import pprint
 import json
 import re
+import pickle
 
 def syntax():
     print("argumentos <coleccion dir> <fichero indice>")
@@ -39,9 +41,14 @@ def indexarNoticias(directorioInicio):
                 idNoticia = "%i , %i" % (numeroDocumento,numeroNoticia)
                 diccionarioDocumentos[idNoticia]=(rel_file,numeroNoticia)
                 er = re.compile(r"(\w+)")
-                print(data[i])
                 for word in er.findall(str(data[i])):
-                    indiceInvertido[word] = indiceInvertido.setdefault(word, []).append(idNoticia)
+                    #Repitiendo
+                    #indiceInvertido.setdefault(word, []).append(idNoticia)
+
+                    #Sin repetir apariciones
+                    indiceInvertido.setdefault(word, [])
+                    indiceInvertido[word] = list(set().union(indiceInvertido[word], [idNoticia]))
+
     return (indiceInvertido, diccionarioDocumentos)
              
 if __name__ == "__main__":
@@ -54,5 +61,6 @@ if __name__ == "__main__":
     ficheroIndice = sys.argv[2]
 
     (indiceInvertido, diccionarioDocumentos) = indexarNoticias(directorioColeccion)
-    print(indiceInvertido)
+    pprint.pprint(indiceInvertido)
 
+    pickle.dump((indiceInvertido,diccionarioDocumentos),open(ficheroIndice, "wb"))
