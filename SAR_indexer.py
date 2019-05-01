@@ -26,7 +26,7 @@ def indexarNoticias(directorioInicio):
     indiceInvertido= {}
     diccionarioDocumentos={}
     start_path = os.path.join(".",directorioInicio)
-
+    idsNoticias=[]
     
     for dirName, subdirList, fileList in os.walk(directorioInicio):
         numeroDocumento = 0
@@ -39,6 +39,7 @@ def indexarNoticias(directorioInicio):
             for i in range(len(data)):
                 numeroNoticia = numeroNoticia+1
                 idNoticia = "%i , %i" % (numeroDocumento,numeroNoticia)
+                idsNoticias.append(list(idNoticia))
                 diccionarioDocumentos[idNoticia]=(rel_file,numeroNoticia)
                 er = re.compile(r"(\w+)")
                 for word in er.findall(str(data[i]['article'])):
@@ -63,4 +64,5 @@ if __name__ == "__main__":
     (indiceInvertido, diccionarioDocumentos) = indexarNoticias(directorioColeccion)
     pprint.pprint(indiceInvertido)
 
-    pickle.dump((indiceInvertido,diccionarioDocumentos),open(ficheroIndice, "wb"))
+    pickle.dump((indiceInvertido,diccionarioDocumentos,idsNoticias),open(ficheroIndice, "wb"))
+    #save_object((indiceInvertido,diccionarioDocumentos),ficheroIndice)
