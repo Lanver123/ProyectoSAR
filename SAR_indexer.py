@@ -41,7 +41,7 @@ def indexarNoticias(directorioInicio):
                 idNoticia = "%i , %i" % (numeroDocumento,numeroNoticia)
                 diccionarioDocumentos[idNoticia]=(rel_file,numeroNoticia)
                 er = re.compile(r"(\w+)")
-                for word in er.findall(str(data[i])):
+                for word in er.findall(str(data[i]['article'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
 
