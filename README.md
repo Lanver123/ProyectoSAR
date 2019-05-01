@@ -5,17 +5,17 @@
 
 - **[DONE]** Aceptará dos argumentos de entrada: el primero el directorio donde está la colección
 de noticias y el segundo el nombre del fichero donde se guardará el índice.
-- **[No completado]** Procesará los documentos y extraerá las noticias: eliminar símbolos no alfanuméricos
+- **[DONE]** Procesará los documentos y extraerá las noticias: eliminar símbolos no alfanuméricos
 (comillas, sostenidos, interrogantes,…), extraer los términos (consideraremos
 separadores de términos los espacios, los saltos de línea y los tabuladores). No se
 deben distinguir mayúsculas y minúsculas en la indexación.
-- **[No completado]** A cada documento se le asignará un identificador único (docid) que será un entero
+- **[DONE]** A cada documento se le asignará un identificador único (docid) que será un entero
 secuencial.
-- **[No completado]** A cada noticia se le asignará un identificador único. Se debe saber cada noticia a que
+- **[DONE]** A cada noticia se le asignará un identificador único. Se debe saber cada noticia a que
 documento pertenece y que posición ocupa dentro de él.
-- **[No completado]** Se deberá crear una fichero invertido accesible por término. Cada entrada contendrá
+- **[DONE]** Se deberá crear una fichero invertido accesible por término. Cada entrada contendrá
 una lista con las noticias en las que aparece ese término.
-- **[No completado]** Toda la información necesaria para el recuperador de noticias se guardará en un único
+- **[DONE]** Toda la información necesaria para el recuperador de noticias se guardará en un único
 fichero en disco
 
 ## Search
