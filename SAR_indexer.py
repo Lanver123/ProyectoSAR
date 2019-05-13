@@ -25,32 +25,34 @@ def indexarNoticias(directorioInicio):
 
     indiceInvertido= {}
     diccionarioDocumentos={}
-    start_path = os.path.join(".",directorioInicio)
+    #start_path = os.path.join(".",directorioInicio)
     idsNoticias=[]
-    
+    nNoticias = 0
     for dirName, subdirList, fileList in os.walk(directorioInicio):
         numeroDocumento = 0
         for fname in fileList:
             numeroNoticia = 0
-            numeroDocumento = numeroDocumento+1
-            rel_file = os.path.join(start_path, fname)
+            #rel_file = os.path.join(start_path, fname)
+            rel_file = os.path.join(dirName, fname)
             with open(rel_file, 'r') as json_file:  
                 data = json.load(json_file)
             for i in range(len(data)):
-                numeroNoticia = numeroNoticia+1
-                idNoticia = "%i , %i" % (numeroDocumento,numeroNoticia)
-                idsNoticias.append(list(idNoticia))
+                nNoticias += 1
+                idNoticia = (numeroDocumento,numeroNoticia)
+                idsNoticias.append(idNoticia)
                 diccionarioDocumentos[idNoticia]=(rel_file,numeroNoticia)
-                er = re.compile(r"(\w+)")
+                numeroNoticia = numeroNoticia+1
+                er = re.compile('\w+')
                 for word in er.findall(str(data[i]['article'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
 
                     #Sin repetir apariciones
-                    indiceInvertido.setdefault(word, [])
-                    indiceInvertido[word] = list(set().union(indiceInvertido[word], [idNoticia]))
+                    indiceInvertido.setdefault(word.lower(), [])
+                    indiceInvertido[word.lower()] = list(set().union(indiceInvertido[word.lower()], [idNoticia]))
+            numeroDocumento = numeroDocumento+1
 
-    return (indiceInvertido, diccionarioDocumentos)
+    return (indiceInvertido, diccionarioDocumentos,idsNoticias)
              
 if __name__ == "__main__":
     directorioColeccion = ""
@@ -61,8 +63,9 @@ if __name__ == "__main__":
     directorioColeccion = sys.argv[1]
     ficheroIndice = sys.argv[2]
 
-    (indiceInvertido, diccionarioDocumentos) = indexarNoticias(directorioColeccion)
+    (indiceInvertido, diccionarioDocumentos,noticias) = indexarNoticias(directorioColeccion)
     pprint.pprint(indiceInvertido)
 
-    pickle.dump((indiceInvertido,diccionarioDocumentos,idsNoticias),open(ficheroIndice, "wb"))
+
+    pickle.dump((indiceInvertido,diccionarioDocumentos,noticias),open(ficheroIndice, "wb"))
     #save_object((indiceInvertido,diccionarioDocumentos),ficheroIndice)

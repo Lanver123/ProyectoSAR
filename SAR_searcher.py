@@ -8,9 +8,11 @@
 # aquellas noticias relevantes 
 # para las consultas que se realicen
 
+import os
 import sys
 import pickle
 import json
+import pprint
 
 def syntax():
     print("\nSAR_searcher.py <index_file> <Query>")
@@ -142,14 +144,16 @@ def procesarConsulta(query,postingList,noticias):
             operador = word
             posibleFinal = False
         elif word == 'NOT':
-            if isNot = 0:
+            if isNot == 0:
                 isNot = 1
             else:
                 isNot = 0
             posibleFinal = False
         else:
             if isNot == 0: wordList.append(word)
-            res = operar(operador,isNot,res,postingList[word],noticias)
+            posting = postingList.get(word,[])
+            res = operar(operador,isNot,res,posting,noticias)
+            #ponemos los operadores a su forma estandar
             operador = 'AND'
             isNot = 0
             posibleFinal = True
@@ -157,7 +161,7 @@ def procesarConsulta(query,postingList,noticias):
     if posibleFinal:
         return (res,wordList)
     else:
-        return []
+        return ([],[])
             
 
 
@@ -166,21 +170,27 @@ def procesarConsulta(query,postingList,noticias):
 def mostrarRes(newsList, dicDocumentos,wordList):
     nRes = len(newsList)
     j = 0
+    if nRes == 0:
+        print("No se han encontrado resultados para la consulta")
+
     if nRes == 1 or nRes == 2:
         #Mostrar fecha, titular, keywords y cuerpo
         for idNoticia in newsList:
             (filePath,numeroNoticia)=dicDocumentos[idNoticia]
             with open(filePath,"r") as json_file:
                 data = json.load(json_file)
+            print(numeroNoticia)
             fecha = data[numeroNoticia]['date']
             titular = data[numeroNoticia]['title']
             keywords = data[numeroNoticia]['keywords']
             cuerpo = data[numeroNoticia]['article']
+            print("\n")
             print(filePath)
-            print("Fecha: ",fecha)
-            print("Titular: ",titular)
-            print("Keywords: ",keywords)
-            print(cuerpo)
+            print("\nFecha: ",fecha)
+            print("\nTitular: ",titular)
+            print("\nKeywords: ",keywords)
+            print("\n",cuerpo)
+            print("---------------------")
 
 
     elif nRes >= 3 and nRes <= 5:
@@ -193,10 +203,12 @@ def mostrarRes(newsList, dicDocumentos,wordList):
             titular = data[numeroNoticia]['title']
             keywords = data[numeroNoticia]['keywords']
             cuerpo = data[numeroNoticia]['article']
+            print("\n")
             print(filePath)
-            print("Fecha: ",fecha)
-            print("Titular: ",titular)
-            print("Keywords: ",keywords)
+            print("\nFecha: ",fecha)
+            print("\nTitular: ",titular)
+            print("\nKeywords: ",keywords)
+            cuerpo = cuerpo.lower()
             cuerpo = cuerpo.split()
             apariciones = []
             for word in wordList:
@@ -205,13 +217,14 @@ def mostrarRes(newsList, dicDocumentos,wordList):
                     apariciones.append(i)
                 except Exception:
                     pass
-            max = max(apariciones)
-            min = min(apariciones)
+            maxim = max(apariciones)
+            minim = min(apariciones)
 
-            max = min(max+2, len(cuerpo)-1)
-            min = max(0, min-2)
-            cuerpo = cuerpo[min:max+1]
-            print("Snippet: ",cuerpo)
+            maxim = min(maxim+2, len(cuerpo)-1)
+            minim = max(0, minim-2)
+            cuerpo = ' '.join(cuerpo[minim:maxim+1])
+            print("\nSnippet: ",cuerpo)
+            print("---------------------")
 
     elif nRes > 5:
         while j < 10 and nRes > 0:
@@ -224,15 +237,19 @@ def mostrarRes(newsList, dicDocumentos,wordList):
                 fecha = data[numeroNoticia]['date']
                 titular = data[numeroNoticia]['title']
                 keywords = data[numeroNoticia]['keywords']
+                print("\n")
                 print(filePath)
-                print("Documento: ",filePath," Fecha: ",fecha," Titular: ",titular," Keywords: ",keywords)
+                print("\nDocumento: ",filePath," Fecha: ",fecha," Titular: ",titular," Keywords: ",keywords)
                 j += 1
+                print("---------------------")
+    if nRes > 0:
+        print("\n Numero de noticias recuperadas: ",nRes)
 
             
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or len(sys.argv > 3):
+    if len(sys.argv) < 2 or len(sys.argv) > 3:
         syntax()
 
     modoBucle = True
@@ -241,7 +258,8 @@ if __name__ == "__main__":
         modoBucle = False
     
     #Cargamos el archivo donde estan los indices
-    objetos = load_object(sys.argv[1])
+    with open(sys.argv[1], "rb") as fh:
+        objetos = pickle.load(fh)
     indiceInvertido = objetos[0]
     dicDocumentos = objetos[1]
     noticias = objetos[2]
