@@ -18,17 +18,92 @@ def syntax():
 
 def op_AND(l1,l2):
     res = []
+    p1 = 0
+    p2 = 0
 
+    l1 = sorted(l1)
+    l2 = sorted(l2)
+    while p1 < len(l1) and p2 < len(l2):
+        if l1[p1] == l2[p2]:
+            res.append(l1[p1])
+            p1 += 1
+            p2 += 1
+        else:
+            if l1[p1][0] < l2[p2][0]:
+                p1 += 1
+            elif l1[p1][0] == l2[p2][0]:
+                if l1[p1][1] < l2[p2][1]:
+                    p1 += 1
+                else:
+                    p2 += 1
+            else:
+                p2 += 1
     return res
 
 def op_ANDNOT(l1,l2):
     res = []
-    
+    p1 = 0
+    p2 = 0
+
+    l1 = sorted(l1)
+    l2 = sorted(l2)
+
+    while p1 < len(l1) and p2 < len(l2):
+        if l1[p1] == l2[p2]:
+            p1 += 1
+            p2 += 1
+        else:
+            if l1[p1][0] < l2[p2][0]:
+                res.append(l1[p1])
+                p1 += 1
+            elif l1[p1][0] == l2[p2][0]:
+                if l1[p1][1] < l2[p2][1]:
+                    res.append(l1[p1])
+                    p1 += 1
+                else:
+                    p2 += 1
+            else:
+                p2 += 1
+    while p1 < len(l1):
+        res.append(l1[p1])
+        p1 += 1
+        
     return res
 
 def op_OR(l1,l2):
     res = []
-    
+    p1 = 0
+    p2 = 0
+
+    l1 = sorted(l1)
+    l2 = sorted(l2)
+
+    while p1 < len(l1) and p2 < len(l2):
+        if l1[p1] == l2[p2]:
+            res.append(l1[p1])
+            p1 += 1
+            p2 += 1
+        else:
+            if l1[p1][0] < l2[p2][0]:
+                res.append(l1[p1])
+                p1 += 1
+            elif l1[p1][0] == l2[p2][0]:
+                if l1[p1][1] < l2[p2][1]:
+                    res.append(l1[p1])
+                    p1 += 1
+                else:
+                    res.append(l2[p2])
+                    p2 += 1
+            else:
+                res.append(l2[p2])
+                p2 += 1
+    while p1 < len(l1):
+        res.append(l1[p1])
+        p1 += 1
+    while p2 < len(l2):
+        res.append(l2[p2])
+        p2 += 1
+        
     return res
 
 #En esta funcion se llamará a la funcion correspondiente para
@@ -65,11 +140,13 @@ def procesarConsulta(query,postingList,noticias):
     for word in query:
         if word == 'AND' or word == 'OR':
             operador = word
+            posibleFinal = False
         elif word == 'NOT':
             if isNot = 0:
                 isNot = 1
             else:
                 isNot = 0
+            posibleFinal = False
         else:
             if isNot == 0: wordList.append(word)
             res = operar(operador,isNot,res,postingList[word],noticias)
@@ -95,11 +172,62 @@ def mostrarRes(newsList, dicDocumentos,wordList):
             (filePath,numeroNoticia)=dicDocumentos[idNoticia]
             with open(filePath,"r") as json_file:
                 data = json.load(json_file)
+            fecha = data[numeroNoticia]['date']
+            titular = data[numeroNoticia]['title']
+            keywords = data[numeroNoticia]['keywords']
+            cuerpo = data[numeroNoticia]['article']
+            print(filePath)
+            print("Fecha: ",fecha)
+            print("Titular: ",titular)
+            print("Keywords: ",keywords)
+            print(cuerpo)
+
+
     elif nRes >= 3 and nRes <= 5:
         #Mostrar fecha, titular, keywords y snippet
+        for idNoticia in newsList:
+            (filePath,numeroNoticia)=dicDocumentos[idNoticia]
+            with open(filePath,"r") as json_file:
+                data = json.load(json_file)
+            fecha = data[numeroNoticia]['date']
+            titular = data[numeroNoticia]['title']
+            keywords = data[numeroNoticia]['keywords']
+            cuerpo = data[numeroNoticia]['article']
+            print(filePath)
+            print("Fecha: ",fecha)
+            print("Titular: ",titular)
+            print("Keywords: ",keywords)
+            cuerpo = cuerpo.split()
+            apariciones = []
+            for word in wordList:
+                try:
+                    i = cuerpo.index(word)
+                    apariciones.append(i)
+                except Exception:
+                    pass
+            max = max(apariciones)
+            min = min(apariciones)
+
+            max = min(max+2, len(cuerpo)-1)
+            min = max(0, min-2)
+            cuerpo = cuerpo[min:max+1]
+            print("Snippet: ",cuerpo)
+
     elif nRes > 5:
         while j < 10 and nRes > 0:
             #Mostrar fecha, titular y keywords
+            for idNoticia in newsList:
+                if j == 10 : break
+                (filePath,numeroNoticia)=dicDocumentos[idNoticia]
+                with open(filePath,"r") as json_file:
+                    data = json.load(json_file)
+                fecha = data[numeroNoticia]['date']
+                titular = data[numeroNoticia]['title']
+                keywords = data[numeroNoticia]['keywords']
+                print(filePath)
+                print("Documento: ",filePath," Fecha: ",fecha," Titular: ",titular," Keywords: ",keywords)
+                j += 1
+
             
 
 
