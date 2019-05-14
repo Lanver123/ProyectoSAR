@@ -129,7 +129,12 @@ def operar(operador, isNot, lista1, lista2, noticias):
 
 #En esta funcion se va a procesar la consulta, devolviendo una lista
 # con los identificadores de las noticias relevantes
-def procesarConsulta(query,postingList,noticias):
+def procesarConsulta(query,indices,noticias):
+    indiceInvertidoArticle = indices["article"]
+    indiceInvertidoTitle = indices["title"]
+    indiceInvertidoSummary = indices["summary"]
+    indiceInvertidoKeywords = indices["keywords"] 
+    indiceInvertidoDate = indices["date"]
     res = noticias  #Inicializamos al conjunto completo para hacer una AND en caso
                     # de que la primera palabra de la query no sea un operador (AND, OR)
     query = query.split()
@@ -140,6 +145,29 @@ def procesarConsulta(query,postingList,noticias):
     wordList = []           #Lista de palabras que deben aparecer segun la consulta
 
     for word in query:
+        postingList = indiceInvertidoArticle
+        if word.startswith("article:"):
+            print("Buscando en el cuerpo de la noticia...")
+            word = word[8:]
+            postingList = indiceInvertidoArticle
+        if word.startswith("title:"):
+            print("Buscando por titulo...")
+            word = word[6:]
+            postingList = indiceInvertidoTitle
+        if word.startswith("summary:"):
+            print("Buscando por sumario...")
+            word = word[8:]
+            postingList = indiceInvertidoSummary
+        if word.startswith("keywords:"):
+            print("Buscando por keywords...")
+            word = word[9:]
+            postingList = indiceInvertidoKeywords
+        if word.startswith("date:"):
+            print("Buscando por fecha...")
+            word = word[5:]
+            postingList = indiceInvertidoDate                              
+
+        print("Palabra: ", word)
         if word == 'AND' or word == 'OR':
             operador = word
             posibleFinal = False
@@ -163,8 +191,6 @@ def procesarConsulta(query,postingList,noticias):
     else:
         return ([],[])
             
-
-
 #En esta funcion se va a mostrar el resultado dada una lista de
 # noticias relevantes a la consulta
 def mostrarRes(newsList, dicDocumentos,wordList):
@@ -179,7 +205,6 @@ def mostrarRes(newsList, dicDocumentos,wordList):
             (filePath,numeroNoticia)=dicDocumentos[idNoticia]
             with open(filePath,"r") as json_file:
                 data = json.load(json_file)
-            print(numeroNoticia)
             fecha = data[numeroNoticia]['date']
             titular = data[numeroNoticia]['title']
             keywords = data[numeroNoticia]['keywords']
@@ -260,16 +285,17 @@ if __name__ == "__main__":
     #Cargamos el archivo donde estan los indices
     with open(sys.argv[1], "rb") as fh:
         objetos = pickle.load(fh)
-    indiceInvertido = objetos[0]["article"]
+    indices = objetos[0]
+
     dicDocumentos = objetos[1]
     noticias = objetos[2]
 
     if not modoBucle:
-        (newsList,wordList) = procesarConsulta(query,indiceInvertido,noticias)
+        (newsList,wordList) = procesarConsulta(query,indices,noticias)
         mostrarRes(newsList,dicDocumentos,wordList)
     while(modoBucle):
        query = input('Consulta: ')
        if len(query)==0:
            break
-       (newsList,wordList) = procesarConsulta(query,indiceInvertido,noticias)
+       (newsList,wordList) = procesarConsulta(query,indices,noticias)
        mostrarRes(newsList,dicDocumentos,wordList)

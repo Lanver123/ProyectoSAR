@@ -20,15 +20,21 @@ def syntax():
     print("argumentos <coleccion dir> <fichero indice>")
     exit(1)
 
-def indexarNoticias(directorioInicio):
+def indexarCuerpo(directorioInicio):
     """ Devuelve una tupla con (IndiceInvertido, DiccionarioDocumentos) """
 
-    indiceInvertido= {}
+    indiceInvertidoArticle= {}
+    indiceInvertidoTitle= {}
+    indiceInvertidoSummary= {}
+    indiceInvertidoKeywords= {}
+    indiceInvertidoDate= {}
+    indices = {}
+
     diccionarioDocumentos={}
     #start_path = os.path.join(".",directorioInicio)
     idsNoticias=[]
     nNoticias = 0
-    for dirName, subdirList, fileList in os.walk(directorioInicio):
+    for dirName, _, fileList in os.walk(directorioInicio):
         numeroDocumento = 0
         for fname in fileList:
             numeroNoticia = 0
@@ -42,18 +48,54 @@ def indexarNoticias(directorioInicio):
                 idsNoticias.append(idNoticia)
                 diccionarioDocumentos[idNoticia]=(rel_file,numeroNoticia)
                 numeroNoticia = numeroNoticia+1
-                er = re.compile('\w+')
+                er = re.compile(r'\w+')
                 for word in er.findall(str(data[i]['article'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
 
                     #Sin repetir apariciones
-                    indiceInvertido.setdefault(word.lower(), [])
-                    indiceInvertido[word.lower()] = list(set().union(indiceInvertido[word.lower()], [idNoticia]))
+                    indiceInvertidoArticle.setdefault(word.lower(), [])
+                    indiceInvertidoArticle[word.lower()] = list(set().union(indiceInvertidoArticle[word.lower()], [idNoticia]))
+                for word in er.findall(str(data[i]['title'])):
+                    #Repitiendo
+                    #indiceInvertido.setdefault(word, []).append(idNoticia)
+
+                    #Sin repetir apariciones
+                    indiceInvertidoTitle.setdefault(word.lower(), [])
+                    indiceInvertidoTitle[word.lower()] = list(set().union(indiceInvertidoTitle[word.lower()], [idNoticia]))  
+                for word in er.findall(str(data[i]['summary'])):
+                    #Repitiendo
+                    #indiceInvertido.setdefault(word, []).append(idNoticia)
+
+                    #Sin repetir apariciones
+                    indiceInvertidoSummary.setdefault(word.lower(), [])
+                    indiceInvertidoSummary[word.lower()] = list(set().union(indiceInvertidoSummary[word.lower()], [idNoticia]))    
+                for word in er.findall(str(data[i]['keywords'])):
+                    #Repitiendo
+                    #indiceInvertido.setdefault(word, []).append(idNoticia)
+
+                    #Sin repetir apariciones
+                    indiceInvertidoKeywords.setdefault(word.lower(), [])
+                    indiceInvertidoKeywords[word.lower()] = list(set().union(indiceInvertidoKeywords[word.lower()], [idNoticia]))  
+                for word in er.findall(str(data[i]['date'])):
+                    #Repitiendo
+                    #indiceInvertido.setdefault(word, []).append(idNoticia)
+
+                    #Sin repetir apariciones
+                    indiceInvertidoDate.setdefault(word.lower(), [])
+                    indiceInvertidoDate[word.lower()] = list(set().union(indiceInvertidoDate[word.lower()], [idNoticia]))                                                                                                   
             numeroDocumento = numeroDocumento+1
 
-    return (indiceInvertido, diccionarioDocumentos,idsNoticias)
+    indices["article"] = indiceInvertidoArticle
+    indices["title"] = indiceInvertidoTitle
+    indices["summary"] = indiceInvertidoSummary
+    indices["keywords"] = indiceInvertidoKeywords
+    indices["date"] = indiceInvertidoDate
+
+    return (indices, diccionarioDocumentos,idsNoticias)
              
+
+
 if __name__ == "__main__":
     directorioColeccion = ""
     ficheroIndice = ""
@@ -63,9 +105,11 @@ if __name__ == "__main__":
     directorioColeccion = sys.argv[1]
     ficheroIndice = sys.argv[2]
 
-    (indiceInvertido, diccionarioDocumentos,noticias) = indexarNoticias(directorioColeccion)
-    pprint.pprint(indiceInvertido)
+    (indices, diccionarioDocumentos,noticias) = indexarCuerpo(directorioColeccion)
+    for subIndex in indices.values():
+        pprint.pprint(subIndex)
 
 
-    pickle.dump((indiceInvertido,diccionarioDocumentos,noticias),open(ficheroIndice, "wb"))
+    pickle.dump((indices,diccionarioDocumentos,noticias),open(ficheroIndice, "wb"))
+    
     #save_object((indiceInvertido,diccionarioDocumentos),ficheroIndice)
