@@ -13,10 +13,10 @@ import sys
 import pickle
 import json
 import pprint
-from nltk.stem import SnowballStemmer
+import re
 
 def syntax():
-    print("\nSAR_searcher.py <index_file> <Query> [-s for Stemming]")
+    print("\nSAR_searcher.py <index_file> <Query>")
     exit(1)
 
 def op_AND(l1,l2):
@@ -24,8 +24,8 @@ def op_AND(l1,l2):
     p1 = 0
     p2 = 0
 
-    l1 = sorted(l1)
-    l2 = sorted(l2)
+    #l1 = sorted(l1)
+    #l2 = sorted(l2)
     while p1 < len(l1) and p2 < len(l2):
         if l1[p1] == l2[p2]:
             res.append(l1[p1])
@@ -48,8 +48,8 @@ def op_ANDNOT(l1,l2):
     p1 = 0
     p2 = 0
 
-    l1 = sorted(l1)
-    l2 = sorted(l2)
+    #l1 = sorted(l1)
+    #l2 = sorted(l2)
 
     while p1 < len(l1) and p2 < len(l2):
         if l1[p1] == l2[p2]:
@@ -78,8 +78,8 @@ def op_OR(l1,l2):
     p1 = 0
     p2 = 0
 
-    l1 = sorted(l1)
-    l2 = sorted(l2)
+    #l1 = sorted(l1)
+    #l2 = sorted(l2)
 
     while p1 < len(l1) and p2 < len(l2):
         if l1[p1] == l2[p2]:
@@ -130,16 +130,7 @@ def operar(operador, isNot, lista1, lista2, noticias):
 
 #En esta funcion se va a procesar la consulta, devolviendo una lista
 # con los identificadores de las noticias relevantes
-def procesarConsulta(query,indices,noticias,stemming):
-    stemmer = SnowballStemmer('spanish')
-
-    #Indices invertidos sin stemming
-    indiceInvertidoArticle = indices["article"]
-    indiceInvertidoTitle = indices["title"]
-    indiceInvertidoSummary = indices["summary"]
-    indiceInvertidoKeywords = indices["keywords"] 
-    indiceInvertidoDate = indices["date"]
-    
+def procesarConsulta(query,postingList,noticias):
     res = noticias  #Inicializamos al conjunto completo para hacer una AND en caso
                     # de que la primera palabra de la query no sea un operador (AND, OR)
     query = query.split()
@@ -150,29 +141,6 @@ def procesarConsulta(query,indices,noticias,stemming):
     wordList = []           #Lista de palabras que deben aparecer segun la consulta
 
     for word in query:
-        postingList = indiceInvertidoArticle
-        if word.startswith("article:"):
-            #print("Buscando en el cuerpo de la noticia...")
-            word = word[8:]
-            postingList = indiceInvertidoArticle
-        if word.startswith("title:"):
-            #print("Buscando por titulo...")
-            word = word[6:]            
-            postingList = indiceInvertidoTitle
-        if word.startswith("summary:"):
-            #print("Buscando por sumario...")
-            word = word[8:]           
-            postingList = indiceInvertidoSummary
-        if word.startswith("keywords:"):
-            #print("Buscando por keywords...")
-            word = word[9:]            
-            postingList = indiceInvertidoKeywords
-        if word.startswith("date:"):
-            #print("Buscando por fecha...")
-            word = word[5:]
-            postingList = indiceInvertidoDate                              
-
-        #print("Palabra: ", word)
         if word == 'AND' or word == 'OR':
             operador = word
             posibleFinal = False
@@ -183,10 +151,7 @@ def procesarConsulta(query,indices,noticias,stemming):
                 isNot = 0
             posibleFinal = False
         else:
-            if isNot == 0 and stemming: wordList.append(stemmer.stem(word))
-            if stemming:
-                word = stemmer.stem(word)            
-            word = word.lower()
+            if isNot == 0: wordList.append(word)
             posting = postingList.get(word,[])
             res = operar(operador,isNot,res,posting,noticias)
             #ponemos los operadores a su forma estandar
@@ -199,10 +164,11 @@ def procesarConsulta(query,indices,noticias,stemming):
     else:
         return ([],[])
             
+
+
 #En esta funcion se va a mostrar el resultado dada una lista de
 # noticias relevantes a la consulta
-def mostrarRes(newsList, dicDocumentos,wordList,stemming):
-    stemmer = SnowballStemmer('spanish')
+def mostrarRes(newsList, dicDocumentos,wordList):
     nRes = len(newsList)
     j = 0
     if nRes == 0:
@@ -214,6 +180,7 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
             (filePath,numeroNoticia)=dicDocumentos[idNoticia]
             with open(filePath,"r") as json_file:
                 data = json.load(json_file)
+            print(numeroNoticia)
             fecha = data[numeroNoticia]['date']
             titular = data[numeroNoticia]['title']
             keywords = data[numeroNoticia]['keywords']
@@ -242,28 +209,26 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
             print("\nFecha: ",fecha)
             print("\nTitular: ",titular)
             print("\nKeywords: ",keywords)
-            cuerpo = cuerpo.lower()
-            cuerpo = cuerpo.split()
-            cuerpoStem = []
-            for word in cuerpo:
-                cuerpoStem.append(stemmer.stem(word))
+            er = re.compile('\w+')
+            if cuerpo.startswith("Actualizado:"):
+                    cuerpo = cuerpo[29:]
+                    
+            cuerpo_clean = er.findall(cuerpo)
+            cuerpo_clean = ' '.join(cuerpo_clean).lower()
             apariciones = []
+            cuerpo_clean = cuerpo_clean.split()
             for word in wordList:
                 try:
-                    if stemming:
-                        i = cuerpoStem.index(word)
-                    else:
-                        i = cuerpo.index(word)
+                    i = cuerpo_clean.index(word)
                     apariciones.append(i)
                 except Exception:
                     pass
-            if len(apariciones) == 0: cuerpo = ""
-            else:
-                minim = min(apariciones)
-                maxim = max(apariciones)
-                maxim = min(maxim+2, len(cuerpo)-1)
-                minim = max(0, minim-2)
-                cuerpo = ' '.join(cuerpo[minim:maxim+1])
+            maxim = max(apariciones)
+            minim = min(apariciones)
+
+            maxim = min(maxim+2, len(cuerpo)-1)
+            minim = max(0, minim-2)
+            cuerpo = ' '.join(cuerpo[minim:maxim+1])
             print("\nSnippet: ",cuerpo)
             print("---------------------")
 
@@ -290,11 +255,6 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
 
 
 if __name__ == "__main__":
-    stemming = False
-    if "-s" in sys.argv:
-        stemming = True
-        sys.argv.remove("-s")
-        print("Stemming activado...")
     if len(sys.argv) < 2 or len(sys.argv) > 3:
         syntax()
 
@@ -306,28 +266,16 @@ if __name__ == "__main__":
     #Cargamos el archivo donde estan los indices
     with open(sys.argv[1], "rb") as fh:
         objetos = pickle.load(fh)
-    indices = objetos[0]
-
+    indiceInvertido = objetos[0]
     dicDocumentos = objetos[1]
     noticias = objetos[2]
-    indicesStemming = {}
-    if stemming:
-        indicesStemming = objetos[3]
+
     if not modoBucle:
-        if stemming:
-            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
-        else:
-            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
-        
+        (newsList,wordList) = procesarConsulta(query,indiceInvertido,noticias)
+        mostrarRes(newsList,dicDocumentos,wordList)
     while(modoBucle):
-        query = input('Consulta: ')
-        if len(query)==0:
+       query = input('\nConsulta: ')
+       if len(query)==0:
            break
-        if stemming:
-            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
-        else:
-            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
+       (newsList,wordList) = procesarConsulta(query,indiceInvertido,noticias)
+       mostrarRes(newsList,dicDocumentos,wordList)

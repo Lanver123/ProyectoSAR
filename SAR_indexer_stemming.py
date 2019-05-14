@@ -22,7 +22,7 @@ def syntax():
     exit(1)
 
 def indexarCuerpo(directorioInicio):
-    """ Devuelve una tupla con (IndiceInvertido, DiccionarioDocumentos) """
+    """ Devuelve una tupla con (IndiceInvertido, DiccionarioDocumentos, idsNoticias, IndicesStemming) """
 
     indiceInvertidoArticle= {}
     indiceInvertidoTitle= {}
