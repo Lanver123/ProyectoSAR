@@ -13,9 +13,10 @@ import sys
 import pickle
 import json
 import pprint
+from nltk.stem import SnowballStemmer
 
 def syntax():
-    print("\nSAR_searcher.py <index_file> <Query>")
+    print("\nSAR_searcher.py <index_file> <Query> [-s for Stemming]")
     exit(1)
 
 def op_AND(l1,l2):
@@ -129,7 +130,8 @@ def operar(operador, isNot, lista1, lista2, noticias):
 
 #En esta funcion se va a procesar la consulta, devolviendo una lista
 # con los identificadores de las noticias relevantes
-def procesarConsulta(query,indices,noticias):
+def procesarConsulta(query,indices,noticias,stemming):
+    stemmer = SnowballStemmer('spanish')
     indiceInvertidoArticle = indices["article"]
     indiceInvertidoTitle = indices["title"]
     indiceInvertidoSummary = indices["summary"]
@@ -152,15 +154,15 @@ def procesarConsulta(query,indices,noticias):
             postingList = indiceInvertidoArticle
         if word.startswith("title:"):
             print("Buscando por titulo...")
-            word = word[6:]
+            word = word[6:]            
             postingList = indiceInvertidoTitle
         if word.startswith("summary:"):
             print("Buscando por sumario...")
-            word = word[8:]
+            word = word[8:]           
             postingList = indiceInvertidoSummary
         if word.startswith("keywords:"):
             print("Buscando por keywords...")
-            word = word[9:]
+            word = word[9:]            
             postingList = indiceInvertidoKeywords
         if word.startswith("date:"):
             print("Buscando por fecha...")
@@ -179,6 +181,9 @@ def procesarConsulta(query,indices,noticias):
             posibleFinal = False
         else:
             if isNot == 0: wordList.append(word)
+            if stemming:
+                word = stemmer.stem(word)            
+            word = word.lower()            
             posting = postingList.get(word,[])
             res = operar(operador,isNot,res,posting,noticias)
             #ponemos los operadores a su forma estandar
@@ -242,9 +247,8 @@ def mostrarRes(newsList, dicDocumentos,wordList):
                     apariciones.append(i)
                 except Exception:
                     pass
-            maxim = max(apariciones)
             minim = min(apariciones)
-
+            maxim = max(apariciones)
             maxim = min(maxim+2, len(cuerpo)-1)
             minim = max(0, minim-2)
             cuerpo = ' '.join(cuerpo[minim:maxim+1])
@@ -274,6 +278,11 @@ def mostrarRes(newsList, dicDocumentos,wordList):
 
 
 if __name__ == "__main__":
+    stemming = False
+    if "-s" in sys.argv:
+        stemming = True
+        sys.argv.remove("-s")
+        print("Stemming activado...")
     if len(sys.argv) < 2 or len(sys.argv) > 3:
         syntax()
 
@@ -289,13 +298,24 @@ if __name__ == "__main__":
 
     dicDocumentos = objetos[1]
     noticias = objetos[2]
-
+    indicesStemming = {}
+    if stemming:
+        indicesStemming = objetos[3]
     if not modoBucle:
-        (newsList,wordList) = procesarConsulta(query,indices,noticias)
-        mostrarRes(newsList,dicDocumentos,wordList)
+        if stemming:
+            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
+            mostrarRes(newsList,dicDocumentos,wordList)
+        else:
+            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
+            mostrarRes(newsList,dicDocumentos,wordList)
+        
     while(modoBucle):
-       query = input('Consulta: ')
-       if len(query)==0:
+        query = input('Consulta: ')
+        if len(query)==0:
            break
-       (newsList,wordList) = procesarConsulta(query,indices,noticias)
-       mostrarRes(newsList,dicDocumentos,wordList)
+        if stemming:
+            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
+            mostrarRes(newsList,dicDocumentos,wordList)
+        else:
+            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
+            mostrarRes(newsList,dicDocumentos,wordList)

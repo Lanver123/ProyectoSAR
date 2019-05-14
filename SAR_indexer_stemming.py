@@ -30,9 +30,14 @@ def indexarCuerpo(directorioInicio):
     indiceInvertidoKeywords= {}
     indiceInvertidoDate= {}
     indices = {}
-
+    indicesStemming = {}
+    indiceStemmArticle={}
+    indiceStemmTitle={}
+    indiceStemmSummary={}
+    indiceStemmKeywords={}
+    indiceStemmDate={}
     diccionarioDocumentos={}
-    diccionarioStemming={}
+    
     stemmer = SnowballStemmer('spanish')
     #start_path = os.path.join(".",directorioInicio)
     idsNoticias=[]
@@ -60,9 +65,10 @@ def indexarCuerpo(directorioInicio):
                     #Sin repetir apariciones
                     indiceInvertidoArticle.setdefault(word.lower(), [])
                     indiceInvertidoArticle[word.lower()] = list(set().union(indiceInvertidoArticle[word.lower()], [idNoticia]))
+
                     stemWord = stemmer.stem(word.lower())
-                    diccionarioStemming.setdefault(stemWord,[])
-                    diccionarioStemming[stemWord] = list(set().union(diccionarioStemming[stemWord],[idNoticia]))
+                    indiceStemmArticle.setdefault(stemWord,[])
+                    indiceStemmArticle[stemWord] = list(set().union(indiceStemmArticle[stemWord],[idNoticia]))
 
                 for word in er.findall(str(data[i]['title'])):
                     #Repitiendo
@@ -71,13 +77,21 @@ def indexarCuerpo(directorioInicio):
                     #Sin repetir apariciones
                     indiceInvertidoTitle.setdefault(word.lower(), [])
                     indiceInvertidoTitle[word.lower()] = list(set().union(indiceInvertidoTitle[word.lower()], [idNoticia]))  
+
+                    stemWord = stemmer.stem(word.lower())
+                    indiceStemmTitle.setdefault(stemWord,[])
+                    indiceStemmTitle[stemWord] = list(set().union(indiceStemmTitle[stemWord],[idNoticia]))
                 for word in er.findall(str(data[i]['summary'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
 
                     #Sin repetir apariciones
                     indiceInvertidoSummary.setdefault(word.lower(), [])
-                    indiceInvertidoSummary[word.lower()] = list(set().union(indiceInvertidoSummary[word.lower()], [idNoticia]))    
+                    indiceInvertidoSummary[word.lower()] = list(set().union(indiceInvertidoSummary[word.lower()], [idNoticia]))  
+
+                    stemWord = stemmer.stem(word.lower())
+                    indiceStemmSummary.setdefault(stemWord,[])
+                    indiceStemmSummary[stemWord] = list(set().union(indiceStemmSummary[stemWord],[idNoticia]))                      
                 for word in er.findall(str(data[i]['keywords'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
@@ -85,13 +99,20 @@ def indexarCuerpo(directorioInicio):
                     #Sin repetir apariciones
                     indiceInvertidoKeywords.setdefault(word.lower(), [])
                     indiceInvertidoKeywords[word.lower()] = list(set().union(indiceInvertidoKeywords[word.lower()], [idNoticia]))  
+
+                    stemWord = stemmer.stem(word.lower())
+                    indiceStemmKeywords.setdefault(stemWord,[])
+                    indiceStemmKeywords[stemWord] = list(set().union(indiceStemmKeywords[stemWord],[idNoticia]))                
                 for word in er.findall(str(data[i]['date'])):
                     #Repitiendo
                     #indiceInvertido.setdefault(word, []).append(idNoticia)
 
                     #Sin repetir apariciones
                     indiceInvertidoDate.setdefault(word.lower(), [])
-                    indiceInvertidoDate[word.lower()] = list(set().union(indiceInvertidoDate[word.lower()], [idNoticia]))                                                                                                   
+                    indiceInvertidoDate[word.lower()] = list(set().union(indiceInvertidoDate[word.lower()], [idNoticia]))
+
+                    indiceStemmTitle.setdefault(word,[])
+                    indiceStemmTitle[word] = list(set().union(indiceStemmTitle[word],[idNoticia]))                                                                                                  
             numeroDocumento = numeroDocumento+1
 
     indices["article"] = indiceInvertidoArticle
@@ -99,9 +120,14 @@ def indexarCuerpo(directorioInicio):
     indices["summary"] = indiceInvertidoSummary
     indices["keywords"] = indiceInvertidoKeywords
     indices["date"] = indiceInvertidoDate
-    indices["stemming"] = diccionarioStemming
 
-    return (indices, diccionarioDocumentos,idsNoticias)
+    indicesStemming["article"] = indiceStemmArticle
+    indicesStemming["title"] = indiceStemmTitle
+    indicesStemming["summary"] = indiceStemmSummary
+    indicesStemming["keywords"] = indiceStemmKeywords
+    indicesStemming["date"] = indiceStemmDate
+
+    return (indices, diccionarioDocumentos,idsNoticias, indicesStemming)
              
 
 
@@ -114,11 +140,11 @@ if __name__ == "__main__":
     directorioColeccion = sys.argv[1]
     ficheroIndice = sys.argv[2]
 
-    (indices, diccionarioDocumentos,noticias) = indexarCuerpo(directorioColeccion)
+    (indices, diccionarioDocumentos,noticias, indicesStemming) = indexarCuerpo(directorioColeccion)
     for subIndex in indices.values():
         pprint.pprint(subIndex)
 
 
-    pickle.dump((indices,diccionarioDocumentos,noticias),open(ficheroIndice, "wb"))
+    pickle.dump((indices,diccionarioDocumentos,noticias,indicesStemming),open(ficheroIndice, "wb"))
     
     #save_object((indiceInvertido,diccionarioDocumentos),ficheroIndice)
