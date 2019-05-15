@@ -149,6 +149,7 @@ def procesarConsulta(query,indices,noticias,stemming):
 
     posibleFinal = False    #Para controlar que la consulta acaba con un termino
     wordList = []           #Lista de palabras que deben aparecer segun la consulta
+    porFecha = False        #Para saber si se busca por fecha
 
     for word in query:
         postingList = indiceInvertidoArticle
@@ -171,6 +172,7 @@ def procesarConsulta(query,indices,noticias,stemming):
         if word.startswith("date:"):
             #print("Buscando por fecha...")
             word = word[5:]
+            porFecha = True
             postingList = indiceInvertidoDate                              
 
         if word == 'AND' or word == 'OR':
@@ -183,14 +185,15 @@ def procesarConsulta(query,indices,noticias,stemming):
                 isNot = 0
             posibleFinal = False
         else:
-            word = word.lower()
-            if isNot == 0:
-                if stemming: wordList.append(stemmer.stem(word))
-                else: wordList.append(word)
+            if not porFecha:
+                word = word.lower()
+                if isNot == 0:
+                    if stemming: wordList.append(stemmer.stem(word))
+                    else: wordList.append(word)
 
-            if stemming:
-                word = stemmer.stem(word)            
-
+                if stemming:
+                    word = stemmer.stem(word)            
+            porFecha = False
             posting = postingList.get(word,[])
             res = operar(operador,isNot,res,posting,noticias)
             #ponemos los operadores a su forma estandar
@@ -288,9 +291,9 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
                 j += 1
                 print("---------------------")
     if nRes > 0:
+        print("\n---------------------")
         print("---------------------")
-        print("---------------------")
-        print("\n Numero de noticias recuperadas: ",nRes)
+        print("Numero de noticias recuperadas: ",nRes)
 
             
 

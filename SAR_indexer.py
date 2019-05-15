@@ -88,7 +88,7 @@ def indexarCuerpo(directorioInicio):
                     stemWord = stemmer.stem(word.lower())
                     indiceStemmKeywords.setdefault(stemWord,[])
                     indiceStemmKeywords[stemWord] = list(set().union(indiceStemmKeywords[stemWord],[idNoticia]))                
-                for word in er.findall(str(data[i]['date'])):
+                for word in data[i]['date'].split():
 
                     indiceInvertidoDate.setdefault(word.lower(), [])
                     indiceInvertidoDate[word.lower()] = list(set().union(indiceInvertidoDate[word.lower()], [idNoticia]))
