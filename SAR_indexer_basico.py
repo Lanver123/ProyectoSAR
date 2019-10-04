@@ -60,19 +60,16 @@ def indexarCuerpo(directorioInicio):
 
 
 if __name__ == "__main__":
-    directorioColeccion = ""
-    ficheroIndice = ""
-    if len(sys.argv) != 3:
+    fichero = ""
+    if len(sys.argv) != 2:
         syntax()
 
-    directorioColeccion = sys.argv[1]
-    ficheroIndice = sys.argv[2]
+    fichero = sys.argv[1]
 
-    (indices, diccionarioDocumentos,noticias) = indexarCuerpo(directorioColeccion)
+    indices = indexarCuerpo(fichero)
 
     pprint.pprint(indices)
 
-
-    pickle.dump((indices,diccionarioDocumentos,noticias),open(ficheroIndice, "wb"))
+    pickle.dump(indices,open(fichero, "wb"))
     
     #save_object((indiceInvertido,diccionarioDocumentos),ficheroIndice)
