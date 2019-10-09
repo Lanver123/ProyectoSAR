@@ -12,13 +12,14 @@ import pprint
 import json
 import re
 import pickle
+import numpy as np
 
 def syntax():
     print("argumentos <archivo.txt> <palabra> <distancia max>")
     exit(1)
 
 def levenshtein_distance(x,y):
-    D = {}
+    D = np.empty((len(x)+1,len(y)+1),dtype=np.int8)
     D[0,0] = 0
     for i in range(1,len(x)+1):
         D[i,0] = D[i-1, 0] + 1
@@ -55,4 +56,5 @@ if __name__ == "__main__":
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
     
     cercanos = cercanos_levenshtein(palabra, diccionarioPalabras.keys(), distancia)
-    print(cercanos)
+    for z in range(len(cercanos)):
+        print(cercanos[z][1],":",cercanos[z][0],end=" ",sep="")
