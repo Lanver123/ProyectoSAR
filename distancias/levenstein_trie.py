@@ -60,13 +60,20 @@ def calculaDistancia(trie,palabra,distancia):
 
 
 
-    for i in range(1,len(palabra+1)):
+    for i in range(1,len(palabra)+1):
         for j in range(1,len(trie)):
             costeBorr = M[i-1,j]+1
             padre = trie[j][0]
             costeIns = M[i,padre] + 1
             costeSus = M[i-1,padre] + (trie[padre][2][palabra[i-1]] != j)
             M[i,j] = min(costeBorr,costeIns,costeSus)
+    
+    #Matriz llena, sacar las palabras cercanas
+    palabras_cercanas = []
+    for j in range (1,len(trie)):
+        if (trie[j][1]!=None and M[len(palabra),j] <= distancia):
+            palabras_cercanas.append(trie[j][1])
+    return palabras_cercanas
 
 if __name__ == "__main__":
 
@@ -81,4 +88,4 @@ if __name__ == "__main__":
     trie = generarTrie(texto)
     cercanos = calculaDistancia(trie,palabra,distancia)
 
-    #print trie
+    print(cercanos)
