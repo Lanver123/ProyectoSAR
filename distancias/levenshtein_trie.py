@@ -28,6 +28,8 @@ def generarTrie(texto):
     #   con la key la siguiente letra y devuelve el nodo hijo
     trie[0] = [None, None, {}]
     for word in er.findall(texto):
+        # pasar la palabra a minusculas
+        word = word.lower()
         nodeCurrent = 0
         for i, letter in enumerate(word):
             #se recupera el nodo siguiente
@@ -38,12 +40,13 @@ def generarTrie(texto):
                 numNodes = numNodes + 1
                 nodeChild = numNodes
                 childList = [nodeCurrent, None, {}]
-                if i + 1 == len(word):
-                    childList[1] = word
                 trie[nodeCurrent][2][letter] = nodeChild
                 trie[nodeChild] = childList
             #para ir recorriendo el trie
             nodeCurrent = nodeChild
+            #si es la ultima letra, se ha procesado toda la palabra y se añade como nodo final
+            if i + 1 == len(word):
+                trie[nodeCurrent][1] = word
     return trie
 
 def calculaDistancia(trie,palabra,distancia):
@@ -53,11 +56,10 @@ def calculaDistancia(trie,palabra,distancia):
     for j in range(len(trie)):
         profun = 0
         padre = trie[j][0]
-        while padre != 0:
+        while padre != None:
             padre = trie[padre][0]
             profun += 1
         M[0,j] = profun
-
 
 
     for i in range(1,len(palabra)+1):
@@ -65,7 +67,8 @@ def calculaDistancia(trie,palabra,distancia):
             costeBorr = M[i-1,j]+1
             padre = trie[j][0]
             costeIns = M[i,padre] + 1
-            costeSus = M[i-1,padre] + (trie[padre][2][palabra[i-1]] != j)
+            letra = palabra[i-1]
+            costeSus = M[i-1,padre] + (trie[padre][2].get(palabra[i-1], -1) != j)
             M[i,j] = min(costeBorr,costeIns,costeSus)
     
     #Matriz llena, sacar las palabras cercanas
@@ -86,6 +89,4 @@ if __name__ == "__main__":
 
     texto = readFile.read()
     trie = generarTrie(texto)
-    cercanos = calculaDistancia(trie,palabra,distancia)
-
-    print(cercanos)
+    cercanos = calculaDistancia(trie,palabra.lower(), distancia)
