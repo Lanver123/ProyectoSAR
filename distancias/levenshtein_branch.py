@@ -27,6 +27,7 @@ def generarTrie(texto):
     #   con la key la siguiente letra y devuelve el nodo hijo
     trie[0] = [None, None, {}]
     for word in er.findall(texto):
+        word = word.lower()
         nodeCurrent = 0
         for i, letter in enumerate(word):
             #se recupera el nodo siguiente
@@ -49,22 +50,22 @@ def calculaDistancia(trie,palabra,distancia):
     pila = [(0,0,0)]
     cercanos = []
     while len(pila) > 0:
+        print(len(pila))
         estadoActual = pila.pop(0)
         cadena = estadoActual[0]
         nodo = estadoActual[1]
         dist = estadoActual[2]
-        if cadena < (len(palabra) - 1):
-            pila.append((cadena+1,nodo,dist+1)) #Borrado
-            simbolos = trie[nodo][2].keys()
-            for i in range (len(simbolos)
-                hijo = trie.get(nodo)[2].get(simbolos[i])
-                pila.append(cadena,hijo,dist+1) #Insercion
-                pila.append(cadena+1,hijo,dist + palabra[cadena]!=simbolos[i]) #Sustitucion
+        if cadena < (len(palabra)):
+            #pila.append((cadena+1,nodo,dist+1)) #Borrado
+            simbolos = list(trie[nodo][2].keys())
+            for i in range (len(simbolos)):
+                hijo = trie[nodo][2][simbolos[i]]
+                pila.append((cadena,hijo,dist+1)) #Insercion
+                pila.append((cadena+1,hijo,dist + (palabra[cadena]!=simbolos[i]))) #Sustitucion
         else:
             if (trie[nodo][1] != None and dist <= distancia):
                 cercanos.append(trie[nodo][1])
     return cercanos
-
 
 
 if __name__ == "__main__":
