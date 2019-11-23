@@ -26,6 +26,8 @@ def generarTrie(texto):
     #   con la key la siguiente letra y devuelve el nodo hijo
     trie[0] = [None, None, {}]
     for word in er.findall(texto):
+        # pasar la palabra a minusculas
+        word = word.lower()
         nodeCurrent = 0
         for i, letter in enumerate(word):
             #se recupera el nodo siguiente
@@ -36,16 +38,17 @@ def generarTrie(texto):
                 numNodes = numNodes + 1
                 nodeChild = numNodes
                 childList = [nodeCurrent, None, {}]
-                if i + 1 == len(word):
-                    childList[1] = word
                 trie[nodeCurrent][2][letter] = nodeChild
                 trie[nodeChild] = childList
             #para ir recorriendo el trie
             nodeCurrent = nodeChild
-        
-    #Guardar el trie generado en memoria secundaria
-    with open('trieGenerado', 'wb') as handle:
-        pickle.dump(trie, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            #si es la ultima letra, se ha procesado toda la palabra y se añade como nodo final
+            if i + 1 == len(word):
+                trie[nodeCurrent][1] = word  
+    
+        #Guardar el trie generado en memoria secundaria
+        with open('trieGenerado', 'wb') as handle:
+            pickle.dump(trie, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
