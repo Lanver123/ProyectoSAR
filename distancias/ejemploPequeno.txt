@@ -2,6 +2,6 @@ Estos archivos están compuestos de bytes que representan
 caracteres ordinarios como letras, números y signos de puntuación
 (incluyendo espacios en blanco), 
 también incluye algunos pocos caracteres de control 
-casa cosa raya queso ceso peso cesta porre:
+casa cosa raya queso ceso peso cesta
 omo tabulaciones, saltos de línea y retornos de carro
 cas cos cus cis ces xes
