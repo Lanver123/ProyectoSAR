@@ -11,6 +11,7 @@ import os
 import pprint
 import json
 import re
+import time
 import pickle
 
 
@@ -22,21 +23,27 @@ def calculaDistancia(trie,palabra,distancia):
     pila = [(0,0,0)]
     cercanos = []
     while len(pila) > 0:
-        print(len(pila))
         estadoActual = pila.pop(0)
         cadena = estadoActual[0]
         nodo = estadoActual[1]
         dist = estadoActual[2]
-        if cadena < (len(palabra)):
-            #pila.append((cadena+1,nodo,dist+1)) #Borrado
-            simbolos = list(trie[nodo][2].keys())
-            for i in range (len(simbolos)):
-                hijo = trie[nodo][2][simbolos[i]]
-                pila.append((cadena,hijo,dist+1)) #Insercion
-                pila.append((cadena+1,hijo,dist + (palabra[cadena]!=simbolos[i]))) #Sustitucion
-        else:
-            if (trie[nodo][1] != None and dist <= distancia):
-                cercanos.append(trie[nodo][1])
+        
+        #cadena, nodo, dist = estadoActual
+
+
+        hijos_trie = list(trie[nodo][2].keys())
+        
+        if(cadena < len(palabra)): # Borrado disponible
+            pila.append((cadena+1,nodo,dist+1)) # Borrado
+
+        for hijo in hijos_trie:
+            pila.append((cadena,hijo,dist+1)) #Insercion
+            if(cadena <= len(palabra)): # Sustitucion disponible      
+                pila.append((cadena+1,hijo,dist + (hijo != palabra[cadena])) #Sustitucion        
+
+        if (trie[nodo][1] != None and dist <= distancia and len(palabra) == cadena): # Coincidencia encontrada
+            cercanos.append(trie[nodo][1])       
+
     return cercanos
 
 
@@ -52,5 +59,8 @@ if __name__ == "__main__":
     with open(fichero, 'rb') as handle:
         trie = pickle.load(handle)
         
+    start_time = time.time()
     cercanos = calculaDistancia(trie,palabra,distancia)
+    end_time = time.time()
     print(cercanos)
+    print("Tiempo transcurrido en la búsqueda %.2f:" % (end_time - start_time))
