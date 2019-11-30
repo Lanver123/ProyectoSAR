@@ -14,10 +14,10 @@ import re
 import pickle
 
 def syntax():
-    print("argumentos <archivo.txt>")
+    print("argumentos <archivo.txt> <nombre_output>")
     exit(1)
 
-def generarTrie(texto):
+def generarTrie(texto, nombre_output):
     er = re.compile("\w+")
     #diccionario que guarda todos los nodos
     trie = {}
@@ -47,15 +47,14 @@ def generarTrie(texto):
                 trie[nodeCurrent][1] = word  
     
         #Guardar el trie generado en memoria secundaria
-        with open('trieGenerado', 'wb') as handle:
+        with open(nombre_output, 'wb') as handle:
             pickle.dump(trie, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         syntax()
     
     readFile = open(sys.argv[1], "r")
     texto = readFile.read()
     
-    generarTrie(texto)
-    print("Trie generado")
+    generarTrie(texto, sys.argv[2])
