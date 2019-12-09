@@ -27,8 +27,9 @@ def levenshtein_distance(x,y):
         D[0,j] = D[0, j-1] + 1
         for i in range(1, len(x)+1):
             if i > 1 and j > 1:
+                cond_damerau = (x[i-1]==y[j-2] and x[i-2]==y[j-1])
                 D[i,j] = min(D[i-1,j]+1, D[i,j-1]+1,D[i-1,j-1]+(x[i-1] != y[j-1]),
-                            D[i-2,j-2] + (x[i-1]==y[j-2] and x[i-2]==y[j-1]))
+                            ((D[i-2,j-2] + 1)*cond_damerau)+(sys.maxsize*(1-cond_damerau)))
             else:
                 D[i,j] = min(D[i-1,j]+1, D[i,j-1]+1,D[i-1,j-1]+(x[i-1] != y[j-1]))
 
@@ -57,7 +58,8 @@ if __name__ == "__main__":
     er = re.compile("\w+")
     lines = []
     diccionarioPalabras = {}
-    for word in er.findall(texto):                
+    for word in er.findall(texto):
+        word = word.lower()               
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
     
     cercanos = cercanos_levenshtein(palabra, diccionarioPalabras.keys(), distancia)

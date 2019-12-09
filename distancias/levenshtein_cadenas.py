@@ -54,7 +54,8 @@ if __name__ == "__main__":
     er = re.compile("\w+")
     lines = []
     diccionarioPalabras = {}
-    for word in er.findall(texto):                
+    for word in er.findall(texto):     
+        word = word.lower()           
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
     
     cercanos = cercanos_levenshtein(palabra, diccionarioPalabras.keys(), distancia)
