@@ -12,6 +12,7 @@ import pprint
 import json
 import re
 import pickle
+import utils_algoritmica
 import numpy as np
 
 
@@ -19,7 +20,8 @@ def syntax():
     print("argumentos <trieGenerado.txt> <palabra> <distancia max>")
     exit(1)
 
-def calculaDistancia(trie,palabra,distancia):
+@utils_algoritmica.timer
+def palabras_cercanas(trie,palabra,distancia):
     M = np.empty(dtype=np.int8, shape=(len(palabra)+1, len(trie)))
     for i in range(len(palabra)+1):
         M[i,0] = i
@@ -46,6 +48,7 @@ def calculaDistancia(trie,palabra,distancia):
     for j in range (1,len(trie)):
         if (trie[j][1]!=None and M[len(palabra),j] <= distancia):
             palabras_cercanas.append(trie[j][1])
+
     return palabras_cercanas
 
 if __name__ == "__main__":
@@ -60,4 +63,6 @@ if __name__ == "__main__":
     with open(fichero, 'rb') as handle:
         trie = pickle.load(handle)
 
-    cercanos = calculaDistancia(trie,palabra.lower(), distancia)
+    result = palabras_cercanas(trie,palabra.lower(), distancia)
+    print(len(result), " palabras encontradas")
+    pprint.pprint(result)

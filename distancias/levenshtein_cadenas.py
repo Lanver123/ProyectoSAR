@@ -12,6 +12,7 @@ import pprint
 import json
 import re
 import pickle
+import utils_algoritmica
 import numpy as np
 
 def syntax():
@@ -29,6 +30,7 @@ def levenshtein_distance(x,y):
             D[i,j] = min(D[i-1,j]+1, D[i,j-1]+1,D[i-1,j-1]+(x[i-1] != y[j-1]))
     return D[len(x),len(y)]
 
+@utils_algoritmica.timer
 def cercanos_levenshtein(word, diccionario, distance):
     cercanas = []
     for palabra in diccionario:
@@ -56,5 +58,8 @@ if __name__ == "__main__":
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
     
     cercanos = cercanos_levenshtein(palabra, diccionarioPalabras.keys(), distancia)
+
+    print(len(cercanos), " palabras encontradas")
     for z in range(len(cercanos)):
         print(cercanos[z][1],":",cercanos[z][0],end=" ",sep="")
+    print()
