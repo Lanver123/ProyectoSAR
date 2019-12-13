@@ -14,6 +14,19 @@ import re
 import utils_algoritmica
 import pickle
 
+class PilaBranch:
+    def __init__(self, first):
+        self.pila = [first]
+    
+    def length(self):
+        return len(self.pila)
+
+    def add(self, elem):
+        if elem not in self.pila:
+            self.pila.append(elem)
+
+    def pop(self):
+        return self.pila.pop(0)
 
 def syntax():
     print("argumentos <trie_generado> <palabra> <distancia max>")
@@ -22,24 +35,25 @@ def syntax():
 
 @utils_algoritmica.timer
 def calculaDistancia(trie, palabra, distancia):
-    pila = [(0, 0, 0)]
+    pila = PilaBranch((0, 0, 0))
     cercanos = []
-    while len(pila) > 0:
-        cadena, nodo, dist = pila.pop(0)
+    while PilaBranch.length(pila) > 0:
+        analizado, nodo, coste = pila.pop()
+        print(analizado, nodo, coste)
         letras_hijos_nodo = list(trie[nodo][2].keys())
 
-        if(cadena < len(palabra)):  # Borrado disponible
-            pila.append((cadena+1, nodo, dist+1))  # Borrado
+        if(analizado < len(palabra) - 1):  # Borrado disponible
+            pila.add((analizado+1, nodo, coste+1))  # Borrado
 
         for letra_hijo in letras_hijos_nodo:
             nodo_hijo = trie[nodo][2].get(letra_hijo)
-            pila.append((cadena, nodo_hijo, dist+1))  # Insercion
-            if(cadena < len(palabra)):  # Sustitucion disponible
-                pila.append((cadena+1, nodo_hijo, dist +
-                             (letra_hijo != palabra[cadena])))  # Sustitucion
+            pila.add((analizado, nodo_hijo, coste+1))  # Insercion
+            if(analizado < len(palabra)):  # Sustitucion disponible
+                pila.add((analizado+1, nodo_hijo, coste +
+                             (letra_hijo != palabra[analizado])))  # Sustitucion
 
         # Coincidencia encontrada
-        if(trie[nodo][1] != None and dist <= distancia and (len(palabra)-1 == cadena)):
+        if(trie[nodo][1] != None and coste <= distancia and (len(palabra)-1 == analizado)):
             cercanos.append(trie[nodo][1])
 
     return cercanos
