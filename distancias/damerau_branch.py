@@ -22,10 +22,7 @@ def calculaDistancia(trie,palabra,distancia):
     pila = [(0,0,0)]
     cercanos = []
     while len(pila) > 0:
-        estadoActual = pila.pop(0)
-        cadena = estadoActual[0]
-        nodo = estadoActual[1]
-        dist = estadoActual[2]
+        cadena, nodo, dist = pila.pop(0)
         if cadena < (len(palabra) - 1):
             pila.append((cadena+1,nodo,dist+1)) #Borrado
             simbolos = trie[nodo][2].keys()

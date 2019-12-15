@@ -17,7 +17,7 @@ import pickle
 class PilaBranch:
     def __init__(self, first):
         self.pila = [first]
-    
+
     def __repr__(self):
         print(self.pila)
 
@@ -38,6 +38,7 @@ class PilaBranch:
     def pop(self):
         return self.pila.pop(0)
 
+
 def syntax():
     print("argumentos <trie_generado> <palabra> <distancia max>")
     exit(1)
@@ -47,24 +48,29 @@ def syntax():
 def calculaDistancia(trie, palabra, distancia):
     pila = PilaBranch((0, 0, 0))
     cercanos = set()
-    while PilaBranch.length(pila) > 0:
-        analizado, nodo, coste = pila.pop()
-
-        if(analizado < len(palabra) and coste <= distancia):
-            letras_hijos_nodo = list(trie[nodo][2].keys())
-            if(analizado < len(palabra)):  # Borrado disponible
-                pila.add((analizado+1, nodo, coste+1))  # Borrado
-
-            for letra_hijo in letras_hijos_nodo:
-                nodo_hijo = trie[nodo][2].get(letra_hijo)
-                pila.add((analizado, nodo_hijo, coste+1))  # Insercion
-                pila.add((analizado+1, nodo_hijo, coste +
-                             (letra_hijo != palabra[analizado])))  # Sustitucion
-
+    pprint.pprint(trie)
+    while PilaBranch.length(pila) != 0:
+        nodo_ppal = pila.pop()
+        analizado, nodo, coste = nodo_ppal
         # Coincidencia encontrada
-        if(trie[nodo][1] != None and coste <= distancia and (len(palabra)-1 == analizado)):
-            print(coste, trie[nodo][1])
+        if(trie[nodo][1] != None and coste <= distancia and (len(palabra) == analizado)):
             cercanos.add(trie[nodo][1])
+
+        if analizado < len(palabra) - 1:  # Hay al menos 1 carácter borrable
+            son_node = (analizado + 1, nodo, coste + 1)
+            pila.add(son_node)  # Borrado
+
+        for letra_hijo in trie[nodo][2]:
+            nodo_hijo = trie[nodo][2].get(letra_hijo)
+
+            if coste < distancia:
+                son_node = (analizado, nodo_hijo, coste + 1)
+                pila.add(son_node)  # Insercion
+
+            if analizado < len(palabra):  # Si hay al menos 1 carácter sustituible
+                son_node = (analizado+1, nodo_hijo, coste +
+                            (letra_hijo != palabra[analizado]))
+                pila.add(son_node)  # Sustitucion
 
     return cercanos
 
@@ -83,3 +89,5 @@ if __name__ == "__main__":
 
     cercanos = calculaDistancia(trie, palabra, distancia)
     print(len(cercanos), cercanos)
+
+# 
