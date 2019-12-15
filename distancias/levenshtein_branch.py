@@ -14,6 +14,7 @@ import re
 import utils_algoritmica
 import pickle
 
+
 class PilaBranch:
     def __init__(self, first):
         self.pila = [first]
@@ -48,15 +49,17 @@ def syntax():
 def calculaDistancia(trie, palabra, distancia):
     pila = PilaBranch((0, 0, 0))
     cercanos = set()
-    pprint.pprint(trie)
     while PilaBranch.length(pila) != 0:
         nodo_ppal = pila.pop()
         analizado, nodo, coste = nodo_ppal
+        if coste > distancia:
+            continue
+
         # Coincidencia encontrada
         if(trie[nodo][1] != None and coste <= distancia and (len(palabra) == analizado)):
             cercanos.add(trie[nodo][1])
 
-        if analizado < len(palabra) - 1:  # Hay al menos 1 carácter borrable
+        if analizado < len(palabra):  # Hay al menos 1 carácter borrable
             son_node = (analizado + 1, nodo, coste + 1)
             pila.add(son_node)  # Borrado
 
@@ -90,4 +93,4 @@ if __name__ == "__main__":
     cercanos = calculaDistancia(trie, palabra, distancia)
     print(len(cercanos), cercanos)
 
-# 
+#
