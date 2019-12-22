@@ -13,31 +13,7 @@ import json
 import re
 import utils_algoritmica
 import pickle
-
-
-class PilaBranch:
-    def __init__(self, first):
-        self.pila = [first]
-
-    def __repr__(self):
-        print(self.pila)
-
-    def best(self, elem):
-        analizado, nodo, distancia = elem
-        for dis in range(distancia):
-            if (analizado, nodo, dis) in self.pila:
-                return False
-        return True
-
-    def length(self):
-        return len(self.pila)
-
-    def add(self, elem):
-        if elem not in self.pila and self.best(elem):
-            self.pila.append(elem)
-
-    def pop(self):
-        return self.pila.pop(0)
+from collections import deque
 
 
 def syntax():
@@ -45,12 +21,11 @@ def syntax():
     exit(1)
 
 
-@utils_algoritmica.timer
-def calculaDistancia(trie, palabra, distancia):
-    pila = PilaBranch((0, 0, 0))
+def palabrasCercanas(trie, palabra, distancia):
+    pila = deque([(0, 0, 0)])
     cercanos = set()
-    while PilaBranch.length(pila) != 0:
-        nodo_ppal = pila.pop()
+    while len(pila) > 0:
+        nodo_ppal = pila.popleft()
         analizado, nodo, coste = nodo_ppal
         if coste > distancia:
             continue
@@ -60,20 +35,17 @@ def calculaDistancia(trie, palabra, distancia):
             cercanos.add(trie[nodo][1])
 
         if analizado < len(palabra):  # Hay al menos 1 carácter borrable
-            son_node = (analizado + 1, nodo, coste + 1)
-            pila.add(son_node)  # Borrado
+            pila.appendleft((analizado + 1, nodo, coste + 1))  # Borrado
 
         for letra_hijo in trie[nodo][2]:
             nodo_hijo = trie[nodo][2].get(letra_hijo)
 
             if coste < distancia:
-                son_node = (analizado, nodo_hijo, coste + 1)
-                pila.add(son_node)  # Insercion
+                pila.appendleft((analizado, nodo_hijo, coste + 1))  # Insercion
 
             if analizado < len(palabra):  # Si hay al menos 1 carácter sustituible
-                son_node = (analizado+1, nodo_hijo, coste +
-                            (letra_hijo != palabra[analizado]))
-                pila.add(son_node)  # Sustitucion
+                pila.appendleft((analizado+1, nodo_hijo, coste +
+                                 (letra_hijo != palabra[analizado])))  # Sustitucion
 
     return cercanos
 

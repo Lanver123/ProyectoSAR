@@ -15,29 +15,33 @@ import pickle
 import utils_algoritmica
 import numpy as np
 
+
 def syntax():
     print("argumentos <archivo.txt> <palabra> <distancia max>")
     exit(1)
 
-def levenshtein_distance(x,y):
-    D = np.empty((len(x)+1,len(y)+1),dtype=np.int8)
-    D[0,0] = 0
-    for i in range(1,len(x)+1):
-        D[i,0] = D[i-1, 0] + 1
-    for j in range(1, len(y)+1):
-        D[0,j] = D[0, j-1] + 1
-        for i in range(1, len(x)+1):
-            D[i,j] = min(D[i-1,j]+1, D[i,j-1]+1,D[i-1,j-1]+(x[i-1] != y[j-1]))
-    return D[len(x),len(y)]
 
-@utils_algoritmica.timer
-def cercanos_levenshtein(word, diccionario, distance):
+def levenshtein_distance(x, y):
+    D = np.empty((len(x)+1, len(y)+1), dtype=np.int8)
+    D[0, 0] = 0
+    for i in range(1, len(x)+1):
+        D[i, 0] = D[i-1, 0] + 1
+    for j in range(1, len(y)+1):
+        D[0, j] = D[0, j-1] + 1
+        for i in range(1, len(x)+1):
+            D[i, j] = min(D[i-1, j]+1, D[i, j-1]+1,
+                          D[i-1, j-1]+(x[i-1] != y[j-1]))
+    return D[len(x), len(y)]
+
+
+def palabrasCercanas(diccionario, word, distance):
     cercanas = []
     for palabra in diccionario:
         dist = levenshtein_distance(word, palabra)
         if dist <= distance:
             cercanas.append((palabra, dist))
-    return cercanas            
+    return cercanas
+
 
 if __name__ == "__main__":
     directorioColeccion = ""
@@ -54,13 +58,14 @@ if __name__ == "__main__":
     er = re.compile("\w+")
     lines = []
     diccionarioPalabras = {}
-    for word in er.findall(texto):     
-        word = word.lower()           
+    for word in er.findall(texto):
+        word = word.lower()
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
-    
-    cercanos = cercanos_levenshtein(palabra, diccionarioPalabras.keys(), distancia)
+
+    cercanos = cercanos_levenshtein(
+        palabra, diccionarioPalabras.keys(), distancia)
 
     print(len(cercanos), " palabras encontradas")
     for z in range(len(cercanos)):
-        print(cercanos[z][1],":",cercanos[z][0],end=" ",sep="")
+        print(cercanos[z][1], ":", cercanos[z][0], end=" ", sep="")
     print()

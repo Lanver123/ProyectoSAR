@@ -25,7 +25,7 @@ def generarTrie(texto, nombre_output):
     """
     Generar la representacion de un trie en forma de diccionario:
         key: Numero de nodo
-        value: [nodo_padre, es_final, letras_siguientes]
+        value: [nodo_padre, palabra_formada, letras_siguientes]
     """
     er = re.compile("\w+")
     # diccionario que guarda todos los nodos
