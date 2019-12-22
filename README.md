@@ -4,5 +4,5 @@
 |Damerau Levenshtein Cadenas|yes|
 |Levenshtein Trie|yes|
 |Levenshtein Trie Branch|yes|
-|Damerau-Levenshtein Trie Branch| |
+|Damerau-Levenshtein Trie Branch|yes|
 
