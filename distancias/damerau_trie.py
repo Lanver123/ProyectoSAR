@@ -36,16 +36,6 @@ def palabrasCercanas(trie, palabra, distancia):
         for j in range(1, len(trie)):
             costeBorr = M[i-1, j]+1
             padre = trie[j][0]
-<<<<<<< HEAD
-            costeIns = M[i, padre] + 1
-            costeSus = M[i-1, padre] + (trie[padre][2][palabra[i-1]] != j)
-            M[i, j] = min(costeBorr, costeIns, costeSus)
-
-    # Matriz llena, sacar las palabras cercanas
-    palabras_cercanas = []
-    for j in range(1, len(trie)):
-        if (trie[j][1] != None and M[len(palabra), j] <= distancia):
-=======
             costeIns = M[i,padre] + 1
             costeSus = M[i-1,padre] + (trie[padre][2].get(palabra[i-1], -1) != j)
             costeDam = sys.maxsize
@@ -61,7 +51,6 @@ def palabrasCercanas(trie, palabra, distancia):
     palabras_cercanas = []
     for j in range (1,len(trie)):
         if (trie[j][1] != None and M[len(palabra),j] <= distancia):
->>>>>>> 4fa1f00e29e52c823f80712071942d9332012472
             palabras_cercanas.append(trie[j][1])
     return palabras_cercanas
 
@@ -78,13 +67,6 @@ if __name__ == "__main__":
     with open(fichero, 'rb') as handle:
         trie = pickle.load(handle)
 
-<<<<<<< HEAD
-    print(trie)
-    cercanos = calculaDistancia(trie, palabra, distancia)
-
-    print(cercanos)
-=======
     cercanos = calculaDistancia(trie,palabra,distancia)
     print(len(cercanos), " palabras encontradas")
     #pprint.pprint(cercanos)
->>>>>>> 4fa1f00e29e52c823f80712071942d9332012472
