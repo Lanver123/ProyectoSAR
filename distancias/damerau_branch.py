@@ -37,7 +37,8 @@ def palabrasCercanas(trie, palabra, distancia):
             if letra_siguiente in trie[nodo][2]:
                 nodo_hijo = trie[nodo][2][letra_siguiente]
                 if letra_actual in trie[nodo_hijo][2]:
-                    pila.appendleft((analizado + 2, nodo_hijo, coste + 1))  # Swap
+                    nieto = trie[nodo_hijo][2][letra_actual]
+                    pila.appendleft((analizado + 2, nieto, coste + 1))  # Swap
 
         if analizado < len(palabra):  # Hay al menos 1 carácter borrable
             pila.appendleft((analizado + 1, nodo, coste + 1))  # Borrado

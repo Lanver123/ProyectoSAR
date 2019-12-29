@@ -58,7 +58,7 @@ if __name__ == "__main__":
     print("Metodo levenshtein_branch")
     print(len(calculoPalabra.palabrasCercanas(levenshtein_branch, trie)), "palabras")
     print()    
-
+    
     print("Metodo levenshtein_trie")
     print(len(calculoPalabra.palabrasCercanas(levenshtein_trie, trie)), "palabras")
     print()
