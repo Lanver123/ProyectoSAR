@@ -18,7 +18,7 @@ from nltk.stem import SnowballStemmer
 import re
 
 def syntax():
-    print("\nSAR_searcher.py <index_file> <Query> [-s for Stemming]")
+    print("\nSAR_searcher.py <index_file> <Query>")
     exit(1)
 
 def op_AND(l1,l2):
@@ -132,9 +132,7 @@ def operar(operador, isNot, lista1, lista2, noticias):
 
 #En esta funcion se va a procesar la consulta, devolviendo una lista
 # con los identificadores de las noticias relevantes
-def procesarConsulta(query,indices,noticias,stemming):
-    stemmer = SnowballStemmer('spanish')
-
+def procesarConsulta(query,indices,noticias,tries):
     #Indices invertidos sin stemming
     indiceInvertidoArticle = indices["article"]
     indiceInvertidoTitle = indices["title"]
@@ -142,8 +140,15 @@ def procesarConsulta(query,indices,noticias,stemming):
     indiceInvertidoKeywords = indices["keywords"] 
     indiceInvertidoDate = indices["date"]
     
+    trieArticle = tries["article"]
+    trieTitle = tries["title"]
+    trieSummary = tries["summary"]
+    trieKeywords = tries["keywords"]
+    trieDate = tries["date"]
+
     res = noticias  #Inicializamos al conjunto completo para hacer una AND en caso
                     # de que la primera palabra de la query no sea un operador (AND, OR)
+    
     query = query.split()
     isNot = 0       #Variable para identificar NOT en la consulta (1=NOT)
     operador = 'AND' #Esta variable indica el operador a utilizar
@@ -152,56 +157,81 @@ def procesarConsulta(query,indices,noticias,stemming):
     wordList = []           #Lista de palabras que deben aparecer segun la consulta
     porFecha = False        #Para saber si se busca por fecha
 
-    for word in query:
+    #for word in query:
+    while len(query) > 0:
+        word = query.pop(0)
         postingList = indiceInvertidoArticle
+        trie = trieArticle
         if word.startswith("article:"):
             #print("Buscando en el cuerpo de la noticia...")
             word = word[8:]
             postingList = indiceInvertidoArticle
+            trie = trieArticle
         if word.startswith("title:"):
             #print("Buscando por titulo...")
             word = word[6:]            
             postingList = indiceInvertidoTitle
+            trie = trieTitle
         if word.startswith("summary:"):
             #print("Buscando por sumario...")
             word = word[8:]           
             postingList = indiceInvertidoSummary
+            trie = trieSummary
         if word.startswith("keywords:"):
             #print("Buscando por keywords...")
             word = word[9:]            
             postingList = indiceInvertidoKeywords
+            trie = trieKeywords
         if word.startswith("date:"):
             #print("Buscando por fecha...")
             word = word[5:]
             porFecha = True
-            postingList = indiceInvertidoDate                              
-
-        if word == 'AND' or word == 'OR':
-            operador = word
-            posibleFinal = False
-        elif word == 'NOT':
-            if isNot == 0:
-                isNot = 1
-            else:
-                isNot = 0
-            posibleFinal = False
+            postingList = indiceInvertidoDate
+            trie = trieDate
+        
+        newWords = []
+        #Detectar si hay que aplicar distancias
+        particion = word.split('%')
+        if (len(particion) > 1):
+            #Procesar distancia Levenshtein
+            newWords = altL.lev_branch(trie,particion[0],particion[1])
         else:
-            if not porFecha:
-                word = word.lower()
+            particion = word.split('@')
+            if (len(particion) > 1):
+                #Procesar distancia Damerau
+                newWords = altL.dam_branch(trie,particion[0],particion[1])
+                
+        if (len(newWords) > 0):
+            #Añadir a la consulta las nuevas palabras
+            query.insert(0,particion[0])
+            for newWord in newWords:
+                if (isNot == 1):
+                    query.insert(0,'NOT')
+                query.insert(0,operador)
+                query.insert(0,newWord)
+        else:
+            if word == 'AND' or word == 'OR':
+                operador = word
+                posibleFinal = False
+            elif word == 'NOT':
                 if isNot == 0:
-                    if stemming: wordList.append(stemmer.stem(word))
-                    else: wordList.append(word)
-
-                if stemming:
-                    word = stemmer.stem(word)            
-            porFecha = False
-            posting = postingList.get(word,[])
-            res = operar(operador,isNot,res,posting,noticias)
-            #ponemos los operadores a su forma estandar
-            operador = 'AND'
-            isNot = 0
-            posibleFinal = True
-    
+                    isNot = 1
+                else:
+                    isNot = 0
+                posibleFinal = False
+            else:
+                if not porFecha:
+                    word = word.lower()
+                    if isNot == 0:
+                        wordList.append(word)       
+                porFecha = False
+                posting = postingList.get(word,[])
+                res = operar(operador,isNot,res,posting,noticias)
+                #ponemos los operadores a su forma estandar
+                operador = 'AND'
+                isNot = 0
+                posibleFinal = True
+        
     if posibleFinal:
         return (res,wordList)
     else:
@@ -209,8 +239,7 @@ def procesarConsulta(query,indices,noticias,stemming):
             
 #En esta funcion se va a mostrar el resultado dada una lista de
 # noticias relevantes a la consulta
-def mostrarRes(newsList, dicDocumentos,wordList,stemming):
-    stemmer = SnowballStemmer('spanish')
+def mostrarRes(newsList, dicDocumentos,wordList):
     nRes = len(newsList)
     j = 0
     if nRes == 0:
@@ -253,17 +282,10 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
             er = re.compile(r'\w+')
             cuerpo = cuerpo.lower()
             cuerpo = er.findall(cuerpo)
-            if stemming:
-                cuerpoStem = []
-                for word in cuerpo:
-                    cuerpoStem.append(stemmer.stem(word))
             apariciones = []
             for word in wordList:
                 try:
-                    if stemming:
-                        i = cuerpoStem.index(word)
-                    else:
-                        i = cuerpo.index(word)
+                    i = cuerpo.index(word)
                     apariciones.append(i)
                 except Exception:
                     pass
@@ -296,16 +318,9 @@ def mostrarRes(newsList, dicDocumentos,wordList,stemming):
         print("---------------------")
         print("Numero de noticias recuperadas: ",nRes)
 
-            
-
 
 if __name__ == "__main__":
-    stemming = False
-    if "-s" in sys.argv:
-        stemming = True
-        sys.argv.remove("-s")
-        print("Stemming activado...")
-    if len(sys.argv) < 2 or len(sys.argv) > 3:
+    if len(sys.argv) not in [2,3]:
         syntax()
 
     modoBucle = True
@@ -316,18 +331,13 @@ if __name__ == "__main__":
     #Cargamos el archivo donde estan los indices
     with open(sys.argv[1], "rb") as fh:
         objetos = pickle.load(fh)
-    indices = objetos[0]
 
+    indices = objetos[0]
     dicDocumentos = objetos[1]
     noticias = objetos[2]
-    indicesStemming = {}
-    if stemming:
-        indicesStemming = objetos[3]
+    tries = objetos[3]
+   
     if not modoBucle:
-        if stemming:
-            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
-        else:
             (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
             mostrarRes(newsList,dicDocumentos,wordList,stemming)
         
@@ -335,9 +345,5 @@ if __name__ == "__main__":
         query = input('Consulta < Pulsa enter para salir > : ')
         if len(query)==0:
            break
-        if stemming:
-            (newsList,wordList) = procesarConsulta(query,indicesStemming,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
-        else:
-            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
+        (newsList,wordList) = procesarConsulta(query,indices,noticias,tries)
+        mostrarRes(newsList,dicDocumentos,wordList)
