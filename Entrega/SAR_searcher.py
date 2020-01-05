@@ -208,7 +208,7 @@ def procesarConsulta(query,indices,noticias,tries):
             for newWord in newWords:
                 if (isNot == 1):
                     query.insert(0,'NOT')
-                query.insert(0,operador)
+                query.insert(0,'OR')
                 query.insert(0,newWord)
         else:
             if word == 'AND' or word == 'OR':
