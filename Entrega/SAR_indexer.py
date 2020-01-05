@@ -16,7 +16,6 @@ import pprint
 import json
 import re
 import pickle
-from nltk.stem import SnowballStemmer
 
 
 def syntax():
@@ -33,24 +32,26 @@ def indexarCuerpo(directorioInicio):
     indiceInvertidoKeywords = {}
     indiceInvertidoDate = {}
     indices = {}
-    indicesStemming = {}
-    indiceStemmArticle = {}
-    indiceStemmTitle = {}
-    indiceStemmSummary = {}
-    indiceStemmKeywords = {}
-    indiceStemmDate = {}
+    tries = {}
     diccionarioDocumentos = {}
 
-    stemmer = SnowballStemmer('spanish')
+    articleString = ""
+    titleString = ""
+    summaryString = ""
+    keywordsString = ""
+    dateString = ""
+
     idsNoticias = []
     nNoticias = 0
     numeroDocumento = 0
+
     for dirName, _, fileList in os.walk(directorioInicio):
         for fname in fileList:
             numeroNoticia = 0
             rel_file = os.path.join(dirName, fname)
             with open(rel_file, 'r') as json_file:
                 data = json.load(json_file)
+
             for i in range(len(data)):
                 nNoticias += 1
                 idNoticia = (numeroDocumento, numeroNoticia)
@@ -58,56 +59,39 @@ def indexarCuerpo(directorioInicio):
                 diccionarioDocumentos[idNoticia] = (rel_file, numeroNoticia)
                 numeroNoticia = numeroNoticia+1
                 er = re.compile(r'\w+')
+
+                articleString += data[i]['article']
+                titleString += data[i]['title']
+                summaryString += data[i]['summary']
+                keywordsString += data[i]['keywords']
+                dateString += data[i]['date']
+
                 for word in er.findall(str(data[i]['article'])):
 
                     indiceInvertidoArticle.setdefault(word.lower(), [])
                     indiceInvertidoArticle[word.lower()] = list(set().union(
                         indiceInvertidoArticle[word.lower()], [idNoticia]))
 
-                    stemWord = stemmer.stem(word.lower())
-                    indiceStemmArticle.setdefault(stemWord, [])
-                    indiceStemmArticle[stemWord] = list(set().union(
-                        indiceStemmArticle[stemWord], [idNoticia]))
-
                 for word in er.findall(str(data[i]['title'])):
-
                     indiceInvertidoTitle.setdefault(word.lower(), [])
                     indiceInvertidoTitle[word.lower()] = list(set().union(
                         indiceInvertidoTitle[word.lower()], [idNoticia]))
 
-                    stemWord = stemmer.stem(word.lower())
-                    indiceStemmTitle.setdefault(stemWord, [])
-                    indiceStemmTitle[stemWord] = list(set().union(
-                        indiceStemmTitle[stemWord], [idNoticia]))
                 for word in er.findall(str(data[i]['summary'])):
-
                     indiceInvertidoSummary.setdefault(word.lower(), [])
                     indiceInvertidoSummary[word.lower()] = list(set().union(
                         indiceInvertidoSummary[word.lower()], [idNoticia]))
 
-                    stemWord = stemmer.stem(word.lower())
-                    indiceStemmSummary.setdefault(stemWord, [])
-                    indiceStemmSummary[stemWord] = list(set().union(
-                        indiceStemmSummary[stemWord], [idNoticia]))
                 for word in er.findall(str(data[i]['keywords'])):
-
                     indiceInvertidoKeywords.setdefault(word.lower(), [])
                     indiceInvertidoKeywords[word.lower()] = list(set().union(
                         indiceInvertidoKeywords[word.lower()], [idNoticia]))
 
-                    stemWord = stemmer.stem(word.lower())
-                    indiceStemmKeywords.setdefault(stemWord, [])
-                    indiceStemmKeywords[stemWord] = list(set().union(
-                        indiceStemmKeywords[stemWord], [idNoticia]))
                 for word in data[i]['date'].split():
-
                     indiceInvertidoDate.setdefault(word.lower(), [])
                     indiceInvertidoDate[word.lower()] = list(set().union(
                         indiceInvertidoDate[word.lower()], [idNoticia]))
 
-                    indiceStemmTitle.setdefault(word, [])
-                    indiceStemmTitle[word] = list(set().union(
-                        indiceStemmTitle[word], [idNoticia]))
             numeroDocumento = numeroDocumento+1
 
     indices["article"] = indiceInvertidoArticle
@@ -116,13 +100,13 @@ def indexarCuerpo(directorioInicio):
     indices["keywords"] = indiceInvertidoKeywords
     indices["date"] = indiceInvertidoDate
 
-    indicesStemming["article"] = indiceStemmArticle
-    indicesStemming["title"] = indiceStemmTitle
-    indicesStemming["summary"] = indiceStemmSummary
-    indicesStemming["keywords"] = indiceStemmKeywords
-    indicesStemming["date"] = indiceStemmDate
+    tries["article"] = altL.generarTrie(articleString)
+    tries["title"] = altL.generarTrie(titleString)
+    tries["summary"] = altL.generarTrie(summaryString)
+    tries["keywords"] = altL.generarTrie(keywordsString)
+    tries["date"] = altL.generarTrie(dateString)
 
-    return (indices, diccionarioDocumentos, idsNoticias, indicesStemming)
+    return (indices, diccionarioDocumentos, idsNoticias, tries)
 
 
 if __name__ == "__main__":
@@ -134,10 +118,5 @@ if __name__ == "__main__":
     directorioColeccion = sys.argv[1]
     ficheroIndice = sys.argv[2]
 
-    (indices, diccionarioDocumentos, noticias,
-     indicesStemming) = indexarCuerpo(directorioColeccion)
-    # for subIndex in indices.values():
-    #    pprint.pprint(subIndex)
-
-    pickle.dump((indices, diccionarioDocumentos, noticias,
-                 indicesStemming), open(ficheroIndice, "wb"))
+    pickle.dump(indexarCuerpo(directorioColeccion),
+                open(ficheroIndice, "wb"))

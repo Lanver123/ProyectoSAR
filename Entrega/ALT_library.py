@@ -7,7 +7,7 @@ import pickle
 import numpy as np
 from collections import deque
 
-def generarTrie(texto, nombre_output):
+def generarTrie(texto):
     """
     Generar la representacion de un trie en forma de diccionario:
         key: Numero de nodo
@@ -51,9 +51,7 @@ def generarTrie(texto, nombre_output):
             if i + 1 == len(word):
                 trie[nodeCurrent][1] = word
 
-    # Guardar el trie generado en memoria secundaria
-    with open(nombre_output, 'wb') as handle:
-        pickle.dump(trie, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    return trie
 
 #######################################
 # Funciones de distancias de palabras #
