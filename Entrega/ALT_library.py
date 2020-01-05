@@ -19,17 +19,17 @@ def generarTrie(texto):
     numNodes = 0
 
     tamano_texto = sum([1 for word in er.findall(texto)])
-    print("Palabras a procesar: ", tamano_texto)
+    #print("Palabras a procesar: ", tamano_texto)
     progreso = 1
 
     # cada elemento del vacabulario es una lista de nodo padre, si es palabra final y cual, y un diccionario
     #   con la key la siguiente letra y devuelve el nodo hijo
     trie[0] = [None, None, {}]
     for word in er.findall(texto):
-        if(progreso % 10000 == 0):
-            print("%d / %d: %.2f %%" %
-                  (progreso, tamano_texto, (progreso/tamano_texto) * 100))
-        progreso += 1
+        #if(progreso % 10000 == 0):
+            #print("%d / %d: %.2f %%" %
+            #      (progreso, tamano_texto, (progreso/tamano_texto) * 100))
+        #progreso += 1
         # pasar la palabra a minusculas
 
         word = word.lower()
@@ -213,7 +213,7 @@ def lev_branch(trie, palabra, distancia):
 
 # DAMERAU BRANCH #
 
-    def dam_branch(trie, palabra, distancia):
+def dam_branch(trie, palabra, distancia):
     pila = deque([(0, 0, 0)])
     cercanos = set()
     while len(pila) > 0:

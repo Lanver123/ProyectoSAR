@@ -194,13 +194,14 @@ def procesarConsulta(query,indices,noticias,tries):
         particion = word.split('%')
         if (len(particion) > 1):
             #Procesar distancia Levenshtein
-            newWords = altL.lev_branch(trie,particion[0],particion[1])
+            newWords = altL.lev_branch(trie,particion[0],int(particion[1]))
         else:
             particion = word.split('@')
             if (len(particion) > 1):
                 #Procesar distancia Damerau
-                newWords = altL.dam_branch(trie,particion[0],particion[1])
-                
+                newWords = altL.dam_branch(trie,particion[0],int(particion[1]))
+               
+        print(query)        
         if (len(newWords) > 0):
             #Añadir a la consulta las nuevas palabras
             query.insert(0,particion[0])
@@ -231,7 +232,8 @@ def procesarConsulta(query,indices,noticias,tries):
                 operador = 'AND'
                 isNot = 0
                 posibleFinal = True
-        
+    
+    posibleFinal = True
     if posibleFinal:
         return (res,wordList)
     else:
@@ -338,8 +340,8 @@ if __name__ == "__main__":
     tries = objetos[3]
    
     if not modoBucle:
-            (newsList,wordList) = procesarConsulta(query,indices,noticias,stemming)
-            mostrarRes(newsList,dicDocumentos,wordList,stemming)
+            (newsList,wordList) = procesarConsulta(query,indices,noticias,tries)
+            mostrarRes(newsList,dicDocumentos,wordList)
         
     while(modoBucle):
         query = input('Consulta < Pulsa enter para salir > : ')
