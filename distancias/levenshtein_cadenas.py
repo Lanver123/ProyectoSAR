@@ -43,6 +43,7 @@ def palabrasCercanas(diccionario, word, distance):
     return cercanas
 
 
+
 if __name__ == "__main__":
     directorioColeccion = ""
     fichero = ""
@@ -62,8 +63,7 @@ if __name__ == "__main__":
         word = word.lower()
         diccionarioPalabras[word] = diccionarioPalabras.get(word, 0) + 1
 
-    cercanos = cercanos_levenshtein(
-        palabra, diccionarioPalabras.keys(), distancia)
+    cercanos = palabrasCercanas(diccionarioPalabras.keys(), palabra, distancia)
 
     print(len(cercanos), " palabras encontradas")
     for z in range(len(cercanos)):
